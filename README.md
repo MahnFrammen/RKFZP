@@ -2,13 +2,10 @@
 
 Rylan Casanova and Zach Pedersen
 
-09/18/22
+10/2/22
 
 CST-305
-
-Visualizing ODE With SciPy
-
-README file
+Runge Kutta Fehlberg
 
 Required installations:
 
