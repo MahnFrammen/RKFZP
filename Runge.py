@@ -1,81 +1,81 @@
-#Zach Pedersen
-#This is my work!
-#CST-305
-#Prof. Citro
+#Zach Pedersen, Rylan Casanova
+#This is our work!
+#Prof Citro
+#2 October 2022
 
-#Import correct libraries and extensions
 import numpy as np
 from scipy.integrate import odeint
-from matplotlib import pyplot as plt
-import warnings
-def fxn():
-    warnings.warn("deprecated", DeprecationWarning)
-with warnings.catch_warnings():
-    warnings.simplefilter("ignore")
-    fxn()
+import matplotlib.pyplot as plt
+import time
+import math
 
-#Define conditions and store values
-h=0.02 #Given values for ODE
-x0=1
-y0=5
-xpoints=[x0] #array for storing X values
-ypoints=[y0] #Array for storing Y values
+#Our initial values
+x0 = 1
+y0 = 5
+h = 0.02
+r = 2000
 
-#State equations and define functions
-def dy_dx(y,x):
-    return x / (np.exp(x) - 1) #Provided Equation
-def RungeKuttaFehlberg(x,y):
-    return x / (np.exp(x) - 1)
-#Calculates k1-k4, x and y solutions
-def RKFAlg(x0,y0,h):
-    k1 = RungeKuttaFehlberg(x0,y0)
-    k2 = RungeKuttaFehlberg(x0+(h/2),y0+((h/2)*k1))
-    k3 = RungeKuttaFehlberg(x0+(h/2),y0+((h/2)*k2))
-    k4 = RungeKuttaFehlberg(x0+h,y0+(h*k3))
-    y1 = y0+(h/6)*(k1+(2*k2)+(2*k3)+k4)
-    x1 = x0+h
-    x1 = round(x1,2)
-    print("Point (x(n+1),y(n+1)) =",(x1,y1))
-    return((x1,y1)) #Returns as ordered pair
+#List that holds our x's and y's from rkf
+xlist = [x0]
+ylist = [y0]
 
-#Define range for number of calculations
-for i in range(2000):
-    print(f"Y{i+1}".format(i)) #Solution value format
-    x0,y0 = RKFAlg(x0,y0,h) #Calls RKF Function
-    xpoints.append(x0) #Saves values into array
-    ypoints.append(y0)
-    y0 = 1
-    ODEy1 = odeint(dy_dx,y0,xpoints)
+#Our ODE
+def dydx(y, x):
+    return y/(math.e**x-1)
 
-#Runge-Kutta Graph
-plt.plot(xpoints,ypoints,'b:',linewidth = 1) #command to plot lines using various colors and widths
-plt.suptitle("RKF Graph")
-plt.xlabel("x Points")
-plt.ylabel("y Points")
+#Computes y's using Runge-Kutta
+def rkf(y, x):
+    k1 = dydx(y, x)
+    k2 = dydx((y + h*k1/2), (x + h/2))
+    k3 = dydx((y + h*k2/2), (x + h/2))
+    k4 = dydx((y + h*k3), (x + h))
+    return y + (h/6)*(k1 + 2*k2 + 2*k3 + k4)
+
+#Sets variables that we will change when making our lists
+x = x0
+y = y0
+#Records start time (Runge-Kutta)
+start = time.time()
+    
+#Calculates 2000 x's and y's and adds them to lists
+for i in range(r):
+    x += h
+    xlist.append(x)
+    y = rkf(y, x)
+    ylist.append(y)
+    
+#Calculates time for RKF
+t = time.time() - start
+print("Runge-Kutta operation took ", t, " seconds.")
+
+
+#Plot results (Runge-Kutta)
+plt.title('Runge-Kutta Method')
+plt.plot(xlist,ylist)
+plt.xlabel('x rkf')
+plt.ylabel('y rkf')
 plt.show()
 
-#ODE graph
-plt.plot(xpoints,ODEy1,'g-',linewidth=1)
-plt.suptitle("ODE Graph")
-plt.xlabel("x Points")
-plt.ylabel("y Points")
+#Records start time (Odeint)
+start = time.time()
+#Time points
+xodeint = np.linspace(1, 41, 2000)
+
+#Solve ODE
+yodeint = odeint(dydx, y0, xodeint)
+#Calculates time for odeint
+t = time.time() - start
+print("Odeint operation took ", t, " seconds.")
+
+#Plot results (Odeint)
+plt.title("Odeint Method")
+plt.plot(xodeint, yodeint)
+plt.xlabel('x odeint')
+plt.ylabel('y odeint')
 plt.show()
 
-#Function for plotting RKF and ODE graph
-plt.plot(xpoints,ODEy1,'g-',linewidth=2,label="ODE")
-plt.plot(xpoints,ypoints,'b:',linewidth=3,label="Runge-Kutta")
-plt.suptitle("ODE and RKF Comparison")
-plt.legend(bbox_to_anchor=(.8,1),loc=0,borderaxespad=0)
-plt.xlabel("X")
-plt.ylabel("Y")
-plt.show()
-
-#Function for plotting the difference graph
-diff = [] #array to store difference
-for i in range(len(xpoints)):
-    diff.append(ypoints[i]-ODEy1[i])
-plt.plot(xpoints,diff)
-plt.suptitle("Difference")
-plt.xlabel("x Points")
-plt.ylabel("RKF and ODE diff.")
-plt.show()
+#Let's you search the lists for x's and y's (Runge-Kutta)
+prompt = "Enter an integer 0 - {}\n".format(r)
+while (1):
+    index = input(prompt)
+    print("x", index, " = ", xlist[int(index)], " y", index, " = ", ylist[int(index)])
